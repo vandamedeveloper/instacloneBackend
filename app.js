@@ -1,7 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-
+const userRoutes = require("./routes/userRoutes");
+const cors = require("cors");
 dotenv.config();
 
 // Conexión a la base de datos
@@ -14,11 +15,11 @@ mongoose
   .catch((err) => console.log(`Error de conexión a la base de datos: ${err}`));
 
 // Configuración de express
-
 const app = express();
-app.use("/", (req, res) => {
-  res.send("hello from server");
-});
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/users", userRoutes);
 
 // Inicio del servidor
 const PORT = process.env.PORT || 3000;

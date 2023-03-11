@@ -18,8 +18,18 @@ exports.createUser = async (req, res, next) => {
 
     await user.save();
 
-    res.status(201).json({ message: "Usuario creado exitosamente" });
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        profilePicture: user.profilePicture,
+      },
+    });
   } catch (error) {
+    res.status(500).json({ success: false, error });
     next(error);
   }
 };
