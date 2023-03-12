@@ -18,8 +18,18 @@ exports.createUser = async (req, res, next) => {
 
     await user.save();
 
+    // generate access_token
+    const access_token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
     res.status(200).json({
       success: true,
+      access_token,
       user: {
         _id: user._id,
         username: user.username,
