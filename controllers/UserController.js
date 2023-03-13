@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Post = require("../models/post");
 
 exports.createUser = async (req, res, next) => {
   try {
@@ -20,7 +21,7 @@ exports.createUser = async (req, res, next) => {
 
     // generate access_token
     const access_token = jwt.sign(
-      { userId: user._id },
+      { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
@@ -30,13 +31,6 @@ exports.createUser = async (req, res, next) => {
     res.status(200).json({
       success: true,
       access_token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        profilePicture: user.profilePicture,
-      },
     });
   } catch (error) {
     res.status(500).json({ success: false, error });
@@ -64,11 +58,35 @@ exports.loginUser = async (req, res, next) => {
         .json({ message: "Correo electrónico o contraseña incorrectos" });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    // generate access_token
+    const access_token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
-    res.status(200).json({ token });
+    res.status(200).json({ access_token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getUserInfo = async (req, res, next) => {
+  try {
+    // Obtener el usuario actual desde el token de autenticación
+    const { id } = req.user;
+    // Buscar el perfil del usuario en la base de datos
+    const userProfile = await User.findOne({ _id: id });
+    // Buscar los posts del usuario en la base de datos
+    const userPosts = await Post.find({ user_id: id });
+
+    // Devolver toda la información del usuario
+    res.status(200).json({
+      profile: userProfile,
+      posts: userPosts,
+    });
   } catch (error) {
     next(error);
   }
