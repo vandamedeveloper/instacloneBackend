@@ -2,7 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
+const postRoutes = require("./routes/postsRoutes");
 const cors = require("cors");
+
 dotenv.config();
 
 // Conexión a la base de datos
@@ -20,6 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
 
 // Inicio del servidor
 const PORT = process.env.PORT || 3000;

@@ -69,6 +69,8 @@ exports.loginUser = async (req, res, next) => {
 
     res.status(200).json({ access_token });
   } catch (error) {
+    res.status(500).json({ success: false, error });
+
     next(error);
   }
 };
@@ -78,16 +80,11 @@ exports.getUserInfo = async (req, res, next) => {
     // Obtener el usuario actual desde el token de autenticación
     const { id } = req.user;
     // Buscar el perfil del usuario en la base de datos
-    const userProfile = await User.findOne({ _id: id });
-    // Buscar los posts del usuario en la base de datos
-    const userPosts = await Post.find({ user_id: id });
-
+    const profile = await User.findOne({ _id: id });
     // Devolver toda la información del usuario
-    res.status(200).json({
-      profile: userProfile,
-      posts: userPosts,
-    });
+    res.status(200).json({ success: true, profile });
   } catch (error) {
+    res.status(500).json({ success: false, error });
     next(error);
   }
 };
