@@ -1,8 +1,8 @@
 // controllers/userController.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const Post = require("../models/post");
+const User = require("../models/User");
+const Post = require("../models/Post");
 
 exports.createUser = async (req, res, next) => {
   try {

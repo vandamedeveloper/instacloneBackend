@@ -1,9 +1,3 @@
-const {
-  createPost,
-  getPosts,
-  getPostByName,
-} = require("../controllers/PostController");
-const verifyToken = require("../middlewares/verifyToken");
 const mongoose = require("mongoose");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const router = require("express").Router();
@@ -59,9 +53,6 @@ function checkFileType(file, cb) {
   cb("filetype");
 }
 
-/**
- * CREATE POST
- */
 const uploadMiddleware = (req, res, next) => {
   const upload = store.single("image");
   upload(req, res, function (err) {
@@ -76,19 +67,44 @@ const uploadMiddleware = (req, res, next) => {
     next();
   });
 };
-router.post("/upload", verifyToken, uploadMiddleware, createPost);
 
-/**
- * GET ALL POSTS
- */
+// router.post("/upload", uploadMiddleware, async (req, res) => {
+//   const { file } = req;
+//   const { id } = file;
+//   if (file.size > 5000000) {
+//     deleteImage(id);
+//     return res
+//       .status(400)
+//       .json({ success: false, error: " File shoud not exceed 5MB" });
+//   }
+//   console.log("uplaoded file: ", file);
+//   return res.status(200).send(file.id);
+// });
 
-router.get("/posts", verifyToken, getPosts);
+const deleteImage = (id) => {
+  if (!id || id === "undefined")
+    return res
+      .status(400)
+      .json({ success: false, error: "No image id provided" });
+  const _id = new mongoose.Types.ObjectId(id);
+  gfs.delete(_id, (err) => {
+    if (err) return res.status(500).json({ success: false, error: err });
+  });
+};
 
-/**
- *  GET IMAGE BY NAME
- */
-router.get("/posts/image/:filename", getPostByName, (req, res) => {
-  res.send({ message: "hola!!" });
+router.get("/:id", async ({ params: { id } }, res) => {
+  if (!id || id === "undefined")
+    return res
+      .status(400)
+      .json({ success: false, error: "No image id provided" });
+
+  try {
+    const _id = new mongoose.Types.ObjectId(id);
+    await gfs.find({ _id }).toArray();
+    gfs.openDownloadStream(_id).pipe(res);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, error: error });
+  }
 });
-
 module.exports = router;
